@@ -1,0 +1,57 @@
+CREATE DATABASE IF NOT EXISTS smartseason;
+USE smartseason;
+
+CREATE TABLE IF NOT EXISTS farms (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  location VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('farmer', 'agronomist', 'admin') NOT NULL DEFAULT 'farmer',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS devices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  serial_number VARCHAR(120) NOT NULL UNIQUE,
+  farm_id INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_devices_farm
+    FOREIGN KEY (farm_id)
+    REFERENCES farms(id)
+    ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS readings (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  device_id INT NOT NULL,
+  metric VARCHAR(50) NOT NULL,
+  value DECIMAL(10,2) NOT NULL,
+  unit VARCHAR(20),
+  recorded_at DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_readings_device
+    FOREIGN KEY (device_id)
+    REFERENCES devices(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS alerts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  device_id INT NOT NULL,
+  severity ENUM('low', 'medium', 'high') NOT NULL DEFAULT 'medium',
+  message VARCHAR(255) NOT NULL,
+  resolved TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_alerts_device
+    FOREIGN KEY (device_id)
+    REFERENCES devices(id)
+    ON DELETE CASCADE
+);
