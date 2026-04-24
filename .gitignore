@@ -2,24 +2,58 @@
 logs
 *.log
 npm-debug.log*
+yarn-error.log*
 
 # Dependencies
 node_modules/
 
 # Build outputs
 dist/
+.next/
+.vercel/
 
-# Env files
+# Environment files (NEVER commit these)
 .env
 .env.local
+.env.*.local
+.env.production
+.env.production.local
 backend/.env
+backend/.env.local
+backend/.env.production
+backend/.env.production.local
 frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env.production.local
 
 # OS/editor files
 .DS_Store
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# Database
+*.sqlite
+*.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+.cache/
 
 
 

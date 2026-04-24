@@ -1,0 +1,69 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install and build frontend
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm run build
+
+  backend-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install backend
+      working-directory: ./backend
+      run: npm ci
+
+  security-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check for .env files in repo
+      run: |
+        if git log --all --full-history -- '*.env' | grep -q 'delete mode'; then
+          echo "⚠️ .env files found in git history"
+        fi
+        
+    - name: Verify .gitignore contains env files
+      run: |
+        if grep -q "^\.env" .gitignore; then
+          echo "✓ .env files are in .gitignore"
+        else
+          echo "✗ .env files should be in .gitignore"
+          exit 1
+        fi

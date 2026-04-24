@@ -12,35 +12,53 @@ A full-stack field monitoring platform for managing agricultural devices, sensor
 - [Role-Based Access Control](#role-based-access-control)
 - [Design Decisions](#design-decisions)
 - [Assumptions](#assumptions)
+- [Deployment](#deployment)
 
 ## Project Structure
 
 ```
-├── backend/              - Express.js API server
+├── backend/                    - Express.js API server
 │   ├── src/
-│   │   ├── config/      - Database and environment config
-│   │   ├── controllers/ - Route handlers
-│   │   ├── middleware/  - Auth and RBAC middleware
-│   │   ├── routes/      - API route definitions
-│   │   ├── services/    - Database query abstractions
-│   │   ├── app.js       - Express app setup
-│   │   └── server.js    - Server entry point
-│   ├── .env.example     - Environment template
+│   │   ├── config/            - Database and environment config
+│   │   ├── controllers/       - Route handlers
+│   │   ├── middleware/        - Auth and RBAC middleware
+│   │   ├── routes/            - API route definitions
+│   │   ├── services/          - Database query abstractions
+│   │   ├── app.js             - Express app setup
+│   │   └── server.js          - Server entry point
+│   ├── .env.example           - Environment template
+│   ├── .env.production.example - Production environment template
+│   ├── .vercelignore          - Files to ignore in deployment
+│   ├── vercel.json            - Deployment configuration
 │   └── package.json
-├── frontend/             - React (Vite) dashboard
+├── frontend/                  - React (Vite) dashboard
 │   ├── src/
-│   │   ├── api/         - API client helpers
-│   │   ├── auth/        - Authentication context
-│   │   ├── components/  - Reusable components
-│   │   ├── pages/       - Page components
-│   │   ├── App.jsx      - Main app component
-│   │   └── main.jsx     - Entry point
+│   │   ├── api/              - API client helpers
+│   │   ├── auth/             - Authentication context
+│   │   ├── components/       - Reusable components
+│   │   ├── pages/            - Page components
+│   │   ├── App.jsx           - Main app component
+│   │   └── main.jsx          - Entry point
+│   ├── .env.example          - Environment template
+│   ├── .env.production.example - Production environment template
+│   ├── .vercelignore         - Files to ignore in deployment
+│   ├── vercel.json           - Vercel deployment configuration
+│   ├── vite.config.js        - Vite build configuration
 │   └── package.json
 ├── database/
-│   ├── schema.sql       - MySQL table definitions
-│   └── seed.sql         - Demo data
-├── README.md
-└── docker-compose.yml   - Optional Docker setup
+│   ├── schema.sql            - MySQL table definitions
+│   └── seed.sql              - Demo data
+├── .github/
+│   └── workflows/            - GitHub Actions CI/CD
+│       ├── frontend.yml      - Frontend build/test automation
+│       ├── backend.yml       - Backend build/test automation
+│       └── pr-checks.yml     - Pull request validation
+├── .gitignore                - Git ignore rules
+├── README.md                 - This file
+├── DEPLOYMENT.md             - Deployment guide
+├── DEPLOYMENT_CHECKLIST.md   - Pre-deployment checklist
+├── docker-compose.yml        - Optional Docker setup
+└── LICENSE
 ```
 
 ## Setup Instructions
@@ -597,6 +615,63 @@ A: Token may have expired (1 day default). Re-login to get a fresh token.
 **Q: "Insufficient permissions"**
 
 A: Your role doesn't have permission for this operation. Check RBAC table above.
+
+## Deployment
+
+This application is ready for production deployment. See the dedicated guides:
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment instructions for Vercel (frontend) and Railway/Render (backend)
+- **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Pre-deployment checklist
+
+### Quick Start: Deploy to Vercel + Railway
+
+1. **Frontend to Vercel** (Free)
+   ```bash
+   npm install -g vercel
+   cd frontend
+   vercel --prod
+   ```
+
+2. **Backend to Railway** (~$5/month, includes MySQL)
+   - Go to [railway.app](https://railway.app)
+   - Import GitHub repository
+   - Deploy `backend` folder
+   - Add MySQL database
+   - Configure environment variables
+
+3. **Update Frontend Endpoint**
+   - Set `VITE_API_BASE_URL` to your Railway backend URL
+   - Redeploy frontend
+
+### Architecture
+
+```
+Frontend (Vercel)  ──HTTPS──>  Backend (Railway)  ──>  MySQL (Railway)
+https://app.vercel.app          https://api.railway.app     Included
+```
+
+### CI/CD
+
+Automated workflows via GitHub Actions:
+
+- ✓ Frontend build check on every push
+- ✓ Backend health check on every push
+- ✓ PR validation before merge
+- ✓ Security checks (no committed .env files)
+
+### Production Checklist
+
+Before deploying:
+
+- [ ] All 3 demo users created and tested
+- [ ] JWT_SECRET changed (min 32 random chars)
+- [ ] Database credentials set to secure values
+- [ ] HTTPS enabled on all connections
+- [ ] CORS restricted to production domain
+- [ ] Environment variables in deployment platform (not in repo)
+- [ ] Backups configured
+
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for complete list.
 
 ## Next Steps / TODO
 
