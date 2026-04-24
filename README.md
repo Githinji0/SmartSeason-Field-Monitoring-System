@@ -29,7 +29,6 @@ A full-stack field monitoring platform for managing agricultural devices, sensor
 │   ├── .env.example           - Environment template
 │   ├── .env.production.example - Production environment template
 │   ├── .vercelignore          - Files to ignore in deployment
-│   ├── vercel.json            - Deployment configuration
 │   └── package.json
 ├── frontend/                  - React (Vite) dashboard
 │   ├── src/
@@ -42,7 +41,6 @@ A full-stack field monitoring platform for managing agricultural devices, sensor
 │   ├── .env.example          - Environment template
 │   ├── .env.production.example - Production environment template
 │   ├── .vercelignore         - Files to ignore in deployment
-│   ├── vercel.json           - Vercel deployment configuration
 │   ├── vite.config.js        - Vite build configuration
 │   └── package.json
 ├── database/
@@ -54,6 +52,7 @@ A full-stack field monitoring platform for managing agricultural devices, sensor
 │       ├── backend.yml       - Backend build/test automation
 │       └── pr-checks.yml     - Pull request validation
 ├── .gitignore                - Git ignore rules
+├── vercel.json               - Root monorepo Vercel services config
 ├── README.md                 - This file
 ├── DEPLOYMENT.md             - Deployment guide
 ├── DEPLOYMENT_CHECKLIST.md   - Pre-deployment checklist

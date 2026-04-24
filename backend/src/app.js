@@ -14,7 +14,7 @@ app.use(
 );
 app.use(express.json());
 
-app.use("/api", apiRouter);
+app.use(env.apiBasePath, apiRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
