@@ -14,8 +14,15 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(160) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   role ENUM('farmer', 'agronomist', 'admin') NOT NULL DEFAULT 'farmer',
+  farm_id INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users
+  ADD CONSTRAINT fk_users_farm
+  FOREIGN KEY (farm_id)
+  REFERENCES farms(id)
+  ON DELETE SET NULL;
 
 CREATE TABLE IF NOT EXISTS devices (
   id INT AUTO_INCREMENT PRIMARY KEY,

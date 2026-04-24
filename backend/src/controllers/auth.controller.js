@@ -1,13 +1,14 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
-import { createUser, findUserByEmail, findUserById } from "../services/user.service.js";
+import { createUser, findUserByEmail, findUserById, listUsers as getUsers } from "../services/user.service.js";
 
 function buildToken(user) {
   return jwt.sign(
     {
       email: user.email,
-      role: user.role
+      role: user.role,
+      farmId: user.farmId
     },
     env.jwtSecret,
     {
@@ -23,13 +24,14 @@ function sanitizeUser(user) {
     name: user.name,
     email: user.email,
     role: user.role,
+    farmId: user.farmId,
     createdAt: user.createdAt
   };
 }
 
 export async function register(req, res, next) {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, farmId } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -54,7 +56,8 @@ export async function register(req, res, next) {
       name: String(name).trim(),
       email: normalizedEmail,
       passwordHash,
-      role: role || "farmer"
+      role: "farmer",
+      farmId: farmId === undefined || farmId === null || farmId === "" ? null : Number(farmId)
     });
 
     const token = buildToken(user);
@@ -65,6 +68,15 @@ export async function register(req, res, next) {
         token
       }
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function listUsers(req, res, next) {
+  try {
+    const users = await getUsers();
+    return res.status(200).json({ data: users });
   } catch (error) {
     return next(error);
   }

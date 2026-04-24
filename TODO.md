@@ -30,7 +30,7 @@
 - [x] Initialize Node.js backend (Express.js) and environment config
 - [x] Configure MySQL connection and migration workflow
 - [x] Design MySQL schema (farms, plots, devices, readings, alerts, users)
-- [ ] Implement authentication and authorization
+- [x] Implement authentication and authorization
 - [ ] Build APIs for:
   - [ ] Farm and plot management
   - [ ] Device onboarding and status
@@ -42,7 +42,7 @@
 
 ## 5. Frontend Development
 - [x] Initialize React.js app and routing
-- [ ] Build auth screens (login/register/reset)
+- [x] Build auth screens (login/register/reset)
 - [ ] Build dashboard with key metrics
 - [ ] Build real-time sensor monitoring view
 - [ ] Build historical trends charts

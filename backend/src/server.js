@@ -1,10 +1,11 @@
 import app from "./app.js";
 import { env } from "./config/env.js";
-import { checkDatabaseConnection } from "./config/db.js";
+import { checkDatabaseConnection, ensureUserFarmAssignmentColumn } from "./config/db.js";
 
 async function bootstrap() {
   try {
     await checkDatabaseConnection();
+    await ensureUserFarmAssignmentColumn();
     app.listen(env.port, () => {
       console.log(`API running on http://localhost:${env.port}`);
     });

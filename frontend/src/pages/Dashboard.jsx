@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { createDevice, fetchDevices, fetchHealth } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
 import StatCard from "../components/StatCard";
 
 export default function Dashboard() {
+  const { token, user, logout } = useAuth();
   const [health, setHealth] = useState("checking...");
   const [devices, setDevices] = useState([]);
   const [loadingDevices, setLoadingDevices] = useState(true);
@@ -31,7 +33,7 @@ export default function Dashboard() {
       setLoadingDevices(true);
       setError("");
       try {
-        const deviceRows = await fetchDevices();
+        const deviceRows = await fetchDevices(token);
         setDevices(deviceRows);
       } catch (err) {
         setError(err.message);
@@ -41,7 +43,7 @@ export default function Dashboard() {
     }
 
     loadDevices();
-  }, []);
+  }, [token]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -52,7 +54,7 @@ export default function Dashboard() {
         name: formData.name,
         serialNumber: formData.serialNumber,
         farmId: formData.farmId ? Number(formData.farmId) : null
-      });
+      }, token);
       setDevices((prev) => [created, ...prev]);
       setFormData({ name: "", serialNumber: "", farmId: "" });
     } catch (err) {
@@ -64,7 +66,14 @@ export default function Dashboard() {
     <main className="page">
       <header className="hero">
         <h1>SmartSeason Field Monitoring</h1>
-        <p>Starter dashboard for Node.js, React, and MySQL stack.</p>
+        <div className="session-row">
+          <span>
+            Signed in as <strong>{user?.name || user?.email}</strong>
+          </span>
+          <button className="ghost-button" type="button" onClick={logout}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <section className="stats-grid">

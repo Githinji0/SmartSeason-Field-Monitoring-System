@@ -1,8 +1,10 @@
-import { createDevice, listDevices } from "../services/device.service.js";
+import { createDevice, listDevices, listDevicesForFarm } from "../services/device.service.js";
 
 export async function getDevices(req, res, next) {
   try {
-    const devices = await listDevices();
+    const devices = req.user.role === "farmer" && req.user.farmId
+      ? await listDevicesForFarm(req.user.farmId)
+      : await listDevices();
     res.status(200).json({ data: devices });
   } catch (error) {
     next(error);
