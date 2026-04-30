@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
+import ReadingsHistory from "./pages/ReadingsHistory";
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <Route path="/register" element={<AuthPage mode="register" />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/readings" element={<ReadingsHistory />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

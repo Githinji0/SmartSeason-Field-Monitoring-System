@@ -34,8 +34,8 @@
 - [ ] Build APIs for:
   - [ ] Farm and plot management
   - [ ] Device onboarding and status
-  - [ ] Sensor data ingestion
-  - [ ] Historical data query
+  - [x] Sensor data ingestion
+  - [x] Historical data query
   - [ ] Alert management
 - [ ] Add background jobs for aggregation and alert evaluation
 - [ ] Add logging, error handling, and API versioning

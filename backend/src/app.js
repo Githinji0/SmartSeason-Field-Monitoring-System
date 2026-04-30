@@ -7,9 +7,36 @@ import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
+const configuredCorsOrigins = String(env.corsOrigin || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+function isAllowedCorsOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  if (configuredCorsOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (env.nodeEnv !== "production") {
+    return /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+  }
+
+  return false;
+}
+
 app.use(
   cors({
-    origin: env.corsOrigin
+    origin(origin, callback) {
+      if (isAllowedCorsOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    }
   })
 );
 app.use(express.json());
