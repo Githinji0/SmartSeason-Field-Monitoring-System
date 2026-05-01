@@ -108,6 +108,27 @@ export default function Dashboard() {
     loadReadings();
   }, [token, readingFilters.deviceId, readingFilters.metric]);
 
+  useEffect(() => {
+    function handleReadingsUpdated() {
+      const selectedDeviceId = readingFilters.deviceId === "all" ? null : Number(readingFilters.deviceId);
+
+      fetchReadings(token, {
+        deviceId: Number.isNaN(selectedDeviceId) ? null : selectedDeviceId,
+        metric: readingFilters.metric.trim() || null,
+        limit: 12
+      })
+        .then((readingRows) => {
+          setReadings(readingRows);
+        })
+        .catch((err) => {
+          setError(err.message);
+        });
+    }
+
+    window.addEventListener("smartseason:readings-updated", handleReadingsUpdated);
+    return () => window.removeEventListener("smartseason:readings-updated", handleReadingsUpdated);
+  }, [token, readingFilters.deviceId, readingFilters.metric]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
@@ -164,6 +185,12 @@ export default function Dashboard() {
               <FileText className="button-icon" aria-hidden="true" />
               Historical Readings
             </Link>
+            {user?.role === "agronomist" || user?.role === "admin" ? (
+              <Link className="ghost-button primary-action" to="/readings/new">
+                <BadgePlus className="button-icon" aria-hidden="true" />
+                Add Reading
+              </Link>
+            ) : null}
             <button className="ghost-button" type="button" onClick={handleExportReadingsCsv} disabled={!readings.length}>
               <Download className="button-icon" aria-hidden="true" />
               Export CSV

@@ -61,3 +61,15 @@ export async function listDevicesForFarm(farmId) {
 
   return rows;
 }
+
+export async function getDeviceById(deviceId) {
+  const [rows] = await pool.execute(
+    `SELECT id, name, serial_number AS serialNumber, farm_id AS farmId, created_at AS createdAt
+     FROM devices
+     WHERE id = ?
+     LIMIT 1`,
+    [deviceId]
+  );
+
+  return rows[0] || null;
+}

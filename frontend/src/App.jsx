@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
+import AddReadingPage from "./pages/AddReadingPage";
 import Dashboard from "./pages/Dashboard";
 import ReadingsHistory from "./pages/ReadingsHistory";
 
@@ -12,6 +13,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/readings" element={<ReadingsHistory />} />
+        <Route path="/readings/new" element={<AddReadingPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

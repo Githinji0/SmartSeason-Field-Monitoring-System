@@ -91,6 +91,20 @@ export async function createDevice(device, token) {
   return payload.data;
 }
 
+export async function createReading(payload, token) {
+  const response = await safeFetch(`${API_BASE_URL}/readings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(token)
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await readResponse(response, "Failed to create reading");
+  return data.data;
+}
+
 export async function registerUser(payload) {
   const response = await safeFetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",

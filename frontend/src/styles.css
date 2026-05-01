@@ -462,6 +462,35 @@ body {
   display: grid;
   place-items: center;
   padding: 1rem;
+  background-image: url('/bg.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+/* Make the card stand out on top of the background */
+.auth-card {
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(6px);
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 10px 30px rgba(15, 23, 15, 0.18);
+  border: 1px solid rgba(15, 23, 15, 0.06);
+}
+
+/* subtle dark overlay behind the card to increase contrast */
+.auth-page {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.22);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .auth-card {
@@ -524,4 +553,45 @@ body {
   place-items: center;
   color: #36513d;
   margin: 0;
+}
+
+.reading-form {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 720px;
+}
+
+.reading-form select,
+.reading-form input {
+  padding: 0.7rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #b9cbbb;
+  background: #ffffff;
+}
+
+.reading-form button {
+  width: fit-content;
+}
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+}
+
+.toast-success {
+  background: #edf7f1;
+  border-color: #b9dfc6;
+  color: #24603c;
+}
+
+.toast-error {
+  background: #fff3f2;
+  border-color: #f1c0bc;
+  color: #9f2f2f;
 }

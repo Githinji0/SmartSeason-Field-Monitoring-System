@@ -1,4 +1,5 @@
 import { createReading, listReadings } from "../services/reading.service.js";
+import { getDeviceById } from "../services/device.service.js";
 
 function parseLimit(value) {
   if (value === undefined) {
@@ -111,6 +112,22 @@ export async function postReading(req, res, next) {
       return res.status(400).json({
         message: "recordedAt must be a valid date when provided"
       });
+    }
+
+    const device = await getDeviceById(parsedDeviceId);
+
+    if (!device) {
+      return res.status(404).json({
+        message: "device not found"
+      });
+    }
+
+    if (req.user.role === "agronomist") {
+      if (!req.user.farmId || device.farmId !== req.user.farmId) {
+        return res.status(403).json({
+          message: "You can only add readings for devices assigned to your farm"
+        });
+      }
     }
 
     const reading = await createReading({

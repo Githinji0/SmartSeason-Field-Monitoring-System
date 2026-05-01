@@ -23,6 +23,24 @@ function formatCsvValue(value) {
   return `"${normalized.replaceAll('"', '""')}"`;
 }
 
+function sanitizeErrorMessage(message) {
+  if (!message) {
+    return null;
+  }
+
+  const normalized = String(message).toLowerCase();
+
+  if (normalized.includes("incorrect arguments") || normalized.includes("mysqld_stmt_execute")) {
+    return "The readings query could not be loaded. Please try again.";
+  }
+
+  if (normalized.includes("network") || normalized.includes("fetch")) {
+    return "The readings service is unavailable right now.";
+  }
+
+  return message;
+}
+
 function buildCsv(rows) {
   const headers = [
     "id",
@@ -96,7 +114,7 @@ export default function ReadingsHistory() {
         const deviceRows = await fetchDevices(token);
         setDevices(deviceRows);
       } catch (err) {
-        setError(err.message);
+        setError(sanitizeErrorMessage(err.message));
       }
     }
 
@@ -120,7 +138,7 @@ export default function ReadingsHistory() {
 
         setReadings(rows);
       } catch (err) {
-        setError(err.message);
+        setError(sanitizeErrorMessage(err.message));
       } finally {
         setLoading(false);
       }
@@ -319,7 +337,7 @@ export default function ReadingsHistory() {
                       {reading.value}
                       {reading.unit ? ` ${reading.unit}` : ""}
                     </td>
-                    <td>{reading.farmId ?? "-"}</td>
+                    <td>{reading.farmName || `Farm ${reading.farmId ?? "-"}`}</td>
                   </tr>
                 ))}
               </tbody>

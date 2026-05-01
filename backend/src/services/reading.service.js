@@ -1,6 +1,6 @@
 import { pool } from "../config/db.js";
 
-function buildReadingSelect(whereClauses) {
+function buildReadingSelect(whereClauses, safeLimit) {
   const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
   return `
@@ -10,6 +10,7 @@ function buildReadingSelect(whereClauses) {
       d.name AS deviceName,
       d.serial_number AS serialNumber,
       d.farm_id AS farmId,
+      f.name AS farmName,
       r.metric,
       r.value,
       r.unit,
@@ -17,9 +18,10 @@ function buildReadingSelect(whereClauses) {
       r.created_at AS createdAt
     FROM readings r
     INNER JOIN devices d ON d.id = r.device_id
+    LEFT JOIN farms f ON f.id = d.farm_id
     ${whereSql}
     ORDER BY r.recorded_at DESC, r.created_at DESC
-    LIMIT ?
+    LIMIT ${safeLimit}
   `;
 }
 
@@ -38,6 +40,7 @@ export async function createReading({ deviceId, metric, value, unit, recordedAt 
         d.name AS deviceName,
         d.serial_number AS serialNumber,
         d.farm_id AS farmId,
+        f.name AS farmName,
         r.metric,
         r.value,
         r.unit,
@@ -45,6 +48,7 @@ export async function createReading({ deviceId, metric, value, unit, recordedAt 
         r.created_at AS createdAt
       FROM readings r
       INNER JOIN devices d ON d.id = r.device_id
+      LEFT JOIN farms f ON f.id = d.farm_id
       WHERE r.id = ?
     `,
     [result.insertId]
@@ -83,8 +87,7 @@ export async function listReadings({ deviceId, farmId, metric, since, until, lim
   }
 
   const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 500) : 100;
-  parameters.push(safeLimit);
 
-  const [rows] = await pool.execute(buildReadingSelect(whereClauses), parameters);
+  const [rows] = await pool.execute(buildReadingSelect(whereClauses, safeLimit), parameters);
   return rows;
 }
