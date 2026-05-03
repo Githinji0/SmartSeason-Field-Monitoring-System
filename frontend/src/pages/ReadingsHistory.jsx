@@ -122,6 +122,35 @@ export default function ReadingsHistory() {
   }, [token]);
 
   useEffect(() => {
+    async function handleAuthChanged() {
+      try {
+        const deviceRows = await fetchDevices(token);
+        setDevices(deviceRows);
+
+        const selectedDeviceId = filters.deviceId === "all" ? null : Number(filters.deviceId);
+        const rows = await fetchReadings(token, {
+          deviceId: Number.isNaN(selectedDeviceId) ? null : selectedDeviceId,
+          metric: filters.metric.trim() || null,
+          since: filters.since ? new Date(`${filters.since}T00:00:00`).toISOString() : null,
+          until: filters.until ? new Date(`${filters.until}T23:59:59`).toISOString() : null,
+          limit: 200
+        });
+
+        setReadings(rows);
+      } catch (err) {
+        setError(sanitizeErrorMessage(err.message));
+      }
+    }
+
+    window.addEventListener("smartseason:auth-changed", handleAuthChanged);
+    window.addEventListener("smartseason:farm-registered", handleAuthChanged);
+    return () => {
+      window.removeEventListener("smartseason:auth-changed", handleAuthChanged);
+      window.removeEventListener("smartseason:farm-registered", handleAuthChanged);
+    };
+  }, [token, filters.deviceId, filters.metric, filters.since, filters.until]);
+
+  useEffect(() => {
     async function loadReadings() {
       setLoading(true);
       setError("");

@@ -33,19 +33,28 @@ export function AuthProvider({ children }) {
     initialize();
   }, [token]);
 
+  function applySession({ token: nextToken, user: nextUser }) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, nextToken);
+    setToken(nextToken);
+    setUser(nextUser);
+    try {
+      window.dispatchEvent(
+        new CustomEvent("smartseason:auth-changed", { detail: { user: nextUser, token: nextToken } })
+      );
+    } catch (e) {
+      // ignore in non-browser environments
+    }
+  }
+
   async function login({ email, password }) {
     const result = await loginUser({ email, password });
-    localStorage.setItem(TOKEN_STORAGE_KEY, result.token);
-    setToken(result.token);
-    setUser(result.user);
+    applySession(result);
     return result.user;
   }
 
   async function register(payload) {
     const result = await registerUser(payload);
-    localStorage.setItem(TOKEN_STORAGE_KEY, result.token);
-    setToken(result.token);
-    setUser(result.user);
+    applySession(result);
     return result.user;
   }
 
@@ -53,6 +62,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     setToken("");
     setUser(null);
+    try {
+      window.dispatchEvent(new CustomEvent("smartseason:auth-changed", { detail: { user: null, token: null } }));
+    } catch (e) {
+      // ignore in non-browser environments
+    }
   }
 
   const value = useMemo(
@@ -63,6 +77,7 @@ export function AuthProvider({ children }) {
       isInitializing,
       login,
       register,
+      applySession,
       logout
     }),
     [token, user, isInitializing]

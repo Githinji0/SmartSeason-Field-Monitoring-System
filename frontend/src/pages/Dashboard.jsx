@@ -13,7 +13,7 @@ import {
   PlusCircle,
   Radar
 } from "lucide-react";
-import { createDevice, fetchDevices, fetchHealth, fetchReadings } from "../api/client";
+import { createDevice, fetchDevices, fetchHealth, fetchReadings, registerOwnFarm } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import ReadingsTrendChart from "../components/ReadingsTrendChart";
 import StatCard from "../components/StatCard";
@@ -37,7 +37,7 @@ function buildCsv(rows) {
 }
 
 export default function Dashboard() {
-  const { token, user, logout } = useAuth();
+  const { token, user, logout, applySession } = useAuth();
   const [health, setHealth] = useState("checking...");
   const [devices, setDevices] = useState([]);
   const [readings, setReadings] = useState([]);
@@ -53,6 +53,12 @@ export default function Dashboard() {
     deviceId: "all",
     metric: "soil_moisture"
   });
+  const [farmForm, setFarmForm] = useState({
+    name: "",
+    location: ""
+  });
+  const [farmSubmitting, setFarmSubmitting] = useState(false);
+  const [farmError, setFarmError] = useState("");
 
   useEffect(() => {
     async function loadDashboard() {
@@ -146,6 +152,34 @@ export default function Dashboard() {
     }
   }
 
+  async function handleFarmRegister(event) {
+    event.preventDefault();
+    setFarmError("");
+    setFarmSubmitting(true);
+
+    try {
+      const data = await registerOwnFarm(
+        {
+          name: farmForm.name,
+          location: farmForm.location || null
+        },
+        token
+      );
+
+      applySession({ token: data.token, user: data.user });
+        try {
+          window.dispatchEvent(new CustomEvent("smartseason:farm-registered", { detail: { farm: data.farm, user: data.user } }));
+        } catch (e) {
+          // ignore in non-browser environments
+        }
+      setFarmForm({ name: "", location: "" });
+    } catch (err) {
+      setFarmError(err.message || "Could not register farm");
+    } finally {
+      setFarmSubmitting(false);
+    }
+  }
+
   function sanitizeErrorMessage(msg) {
     if (!msg) return null;
     const m = String(msg).toLowerCase();
@@ -209,6 +243,57 @@ export default function Dashboard() {
         <StatCard label="Recent Readings" value={readings.length} icon={Activity} />
       </section>
 
+      {user?.role === "farmer" && !user?.farmId ? (
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow icon-eyebrow">
+                <Building2 className="button-icon" aria-hidden="true" />
+                Farm setup
+              </p>
+              <h2>Register Your Farm</h2>
+              <p>Create your farm profile to unlock farm-scoped data.</p>
+            </div>
+          </div>
+
+          <form className="device-form" onSubmit={handleFarmRegister}>
+            <label className="input-with-icon">
+              <span className="input-icon" aria-hidden="true">
+                <Building2 className="button-icon" />
+              </span>
+              <input
+                placeholder="Farm Name"
+                value={farmForm.name}
+                onChange={(event) =>
+                  setFarmForm((prev) => ({ ...prev, name: event.target.value }))
+                }
+                required
+              />
+            </label>
+
+            <label className="input-with-icon">
+              <span className="input-icon" aria-hidden="true">
+                <Hash className="button-icon" />
+              </span>
+              <input
+                placeholder="Location (optional)"
+                value={farmForm.location}
+                onChange={(event) =>
+                  setFarmForm((prev) => ({ ...prev, location: event.target.value }))
+                }
+              />
+            </label>
+
+            <button type="submit" disabled={farmSubmitting}>
+              <PlusCircle className="button-icon" aria-hidden="true" />
+              {farmSubmitting ? "Registering..." : "Register Farm"}
+            </button>
+          </form>
+
+          {farmError ? <p className="error">{farmError}</p> : null}
+        </section>
+      ) : null}
+
       <section className="panel">
         <div className="panel-header">
           <div>
@@ -271,6 +356,7 @@ export default function Dashboard() {
         ) : null}
       </section>
 
+      {user?.role === "agronomist" || user?.role === "admin" ? (
       <section className="panel">
         <div className="panel-header">
           <div>
@@ -332,6 +418,7 @@ export default function Dashboard() {
         </form>
         {sanitizeErrorMessage(error) ? <p className="error">{sanitizeErrorMessage(error)}</p> : null}
       </section>
+      ) : null}
 
       <section className="panel">
         <h2>Device List</h2>

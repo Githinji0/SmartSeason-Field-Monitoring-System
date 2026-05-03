@@ -117,6 +117,20 @@ export async function registerUser(payload) {
   return data.data;
 }
 
+export async function registerOwnFarm(payload, token) {
+  const response = await safeFetch(`${API_BASE_URL}/auth/farm`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(token)
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await readResponse(response, "Failed to register farm");
+  return data.data;
+}
+
 export async function loginUser(payload) {
   const response = await safeFetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",

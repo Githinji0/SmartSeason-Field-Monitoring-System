@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
+import { pool } from "../config/db.js";
 import { createUser, findUserByEmail, findUserById, listUsers as getUsers } from "../services/user.service.js";
 
 function buildToken(user) {
@@ -128,5 +129,80 @@ export async function me(req, res, next) {
     return res.status(200).json({ data: sanitizeUser(user) });
   } catch (error) {
     return next(error);
+  }
+}
+
+export async function registerOwnFarm(req, res, next) {
+  const connection = await pool.getConnection();
+  let hasTransaction = false;
+
+  try {
+    const userId = Number.parseInt(String(req.user.id), 10);
+    const { name, location } = req.body;
+
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ message: "farm name is required" });
+    }
+
+    const currentUser = await findUserById(userId);
+
+    if (!currentUser) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    if (currentUser.farmId) {
+      return res.status(400).json({ message: "You already have an assigned farm" });
+    }
+
+    await connection.beginTransaction();
+    hasTransaction = true;
+
+    const [farmInsert] = await connection.execute(
+      `INSERT INTO farms (name, location)
+       VALUES (?, ?)`,
+      [String(name).trim(), location && String(location).trim() ? String(location).trim() : null]
+    );
+
+    const farmId = farmInsert.insertId;
+
+    await connection.execute(
+      `UPDATE users
+       SET farm_id = ?
+       WHERE id = ?`,
+      [farmId, userId]
+    );
+
+    const [userRows] = await connection.execute(
+      `SELECT id, name, email, role, farm_id AS farmId, created_at AS createdAt
+       FROM users
+       WHERE id = ?
+       LIMIT 1`,
+      [userId]
+    );
+
+    await connection.commit();
+    hasTransaction = false;
+
+    const updatedUser = userRows[0];
+    const token = buildToken(updatedUser);
+
+    return res.status(201).json({
+      data: {
+        farm: {
+          id: farmId,
+          name: String(name).trim(),
+          location: location && String(location).trim() ? String(location).trim() : null
+        },
+        user: sanitizeUser(updatedUser),
+        token
+      }
+    });
+  } catch (error) {
+    if (hasTransaction) {
+      await connection.rollback();
+    }
+    return next(error);
+  } finally {
+    connection.release();
   }
 }
